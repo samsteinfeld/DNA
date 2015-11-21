@@ -1,3 +1,3 @@
 # DNA
 
-Contains Steinfeld_a4.py and BioDNA.py
+Contains Steinfeld_a4.py
