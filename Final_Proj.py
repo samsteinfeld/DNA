@@ -18,7 +18,7 @@ def main():
     Directories = ["Mammals", "Birds", "Fish"]
     INPUT_DIR = "inputDirectory/"
     OUTPUT_FILENAME = "Results.csv"
-    
+    OUTPUT = open(OUTPUT_FILENAME, 'w')
 
     
     LMER = getLMER(LMER_MIN, LMER_MAX)
@@ -50,34 +50,39 @@ def main():
     fileList = []
     
     while(i<= int(len(Directories))-1):
-        fileList += glob.glob(INPUT_DIR + Directories[i] + '/*')
+        print(Directories[i])
+        fileList = glob.glob(INPUT_DIR + Directories[i] + '/*')
         fileList.sort()
-        i+=1
-    
-    # how many files are we using?
-    nFiles = len(fileList)
-    
-    fileN = 0   # index into LIST for each motif
-    for nextFile in fileList:
-        DNA = getDNA(nextFile)
         
-        listOfMotifs = breakIntoMotifs(DNA, LMER)
         
-        for nextMotif in listOfMotifs:
+        # how many files are we using?
+        nFiles = len(fileList)
+        
+        fileN = 0   # index into LIST for each motif
+        for nextFile in fileList:
+            DNA = getDNA(nextFile)
             
-            if (nextMotif in dict):
-                dict[nextMotif][fileN] = dict[nextMotif][fileN] + 1
-            else:
-                dict[nextMotif] = [0]*nFiles
-                dict[nextMotif][fileN] = 1
+            listOfMotifs = breakIntoMotifs(DNA, LMER)
+            
+            for nextMotif in listOfMotifs:
                 
-        # end for each motif        
-     
-        fileN += 1  # prepare for next file
-    # end for
+                if (nextMotif in dict):
+                    dict[nextMotif][fileN] = dict[nextMotif][fileN] + 1
+                else:
+                    dict[nextMotif] = [0]*nFiles
+                    dict[nextMotif][fileN] = 1
+                if (fileN > 1):
+                    print("The conserved motif", nextMotif, "shows up in", fileN+1, "upstream sequences")
+                    
+            fileN += 1  # prepare for next file
+            
+        printALL_MotifCounts(OUTPUT, fileList, dict)
+        i+=1
+        
     
-    printALL_MotifCounts(OUTPUT_FILENAME, fileList, dict)
-           
+        
+        
+    OUTPUT.close()           
     print("\n\nDone.\n")
     
 # end main()
@@ -158,11 +163,8 @@ def breakIntoMotifs(DNA, LMER):
 # end breakIntoMotifs()
 #-----------------------------------------------------------------------------------------
 
-def printALL_MotifCounts(outputFilename, fileList, dictOfMotifs):
+def printALL_MotifCounts(OUTPUT, fileList, dictOfMotifs):
 
-    # open
-    OUTPUT = open(outputFilename, 'w')
-    
     # print dictionary to file
     OUTPUT.write("Unique Motifs and Their Counts\n")
     OUTPUT.write("Total unique motifs: %d\n\n" %  (len(dictOfMotifs)) )    
@@ -183,7 +185,8 @@ def printALL_MotifCounts(outputFilename, fileList, dictOfMotifs):
         OUTPUT.write("\n")
     
     # close outfile file
-    OUTPUT.close()
+    OUTPUT.write("\n")
+   
 
 # end printMotifCounts()
 	
@@ -231,5 +234,6 @@ def randomGenome():
     random.shuffle(nux)
     randomS = "".join(nucs)
     
+#check to see if motifs are in the majority of species in each class
 
 main()
