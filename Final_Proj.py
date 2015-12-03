@@ -15,70 +15,55 @@ def main():
     LMER_MIN = 8
     LMER_MAX = 12
     
-    Directories = ["Mammals", "Birds", "Fish"]
-    INPUT_DIR = "inputDirectory/"
-    OUTPUT_FILENAME = "Results.csv"
-    OUTPUT = open(OUTPUT_FILENAME, 'w')
-
+    Classes = ["Mammals", "Birds", "Fish"] #array containing folder name of each class
+    LMER = LMER_MIN
     
-    LMER = getLMER(LMER_MIN, LMER_MAX)
-    print ("Lmer:", LMER, "\n")    
+    INPUT_DIR = "inputDirectory/" 
     
-    #===================================================================================
-    #
-    # DATA STRUCTURE: a dictionary of lists, e.g.,  
-    #    dict["ACGT"][0] has file#0's count
-    #    dict["ACGT"][1] has file#1's count
-    #
-    # ALGORITHM
-    # For Each input file in the directory of input data files
-    #   (1) read sequence file, merge into one string
-    #   (2) break sequence into array of L-mers
-    #   (3) add counts of each motif into dict[motif][fileIndex]
-    # (4) end for each file
+    while(LMER <= LMER_MAX):
+        OUTPUT_FILENAME = "Results_MotifSize" + str(LMER) + ".csv"
+        OUTPUT = open(OUTPUT_FILENAME, 'w')
     
-    # (5) Print <TAB>-delimited results for entire matrix into Excel (.csv) file     
-    
-    
-    dict = {}
-            
-    # -------------------------------------------
-    # work our way through the input directories
-    #--------------------------------------------
-    # glob sorted texts folder into genreList
-    i = 0
-    fileList = []
-    
-    while(i<= int(len(Directories))-1):
-        print(Directories[i])
-        fileList = glob.glob(INPUT_DIR + Directories[i] + '/*')
-        fileList.sort()
         
+        #LMER = getLMER(LMER_MIN, LMER_MAX)
+        #print ("Lmer:", LMER, "\n")    
         
-        # how many files are we using?
-        nFiles = len(fileList)
+    
+        dict = {} 
         
-        fileN = 0   # index into LIST for each motif
-        for nextFile in fileList:
-            DNA = getDNA(nextFile)
+        i = 0 #folder counter
+        fileList = []
+        
+        while(i<= int(len(Classes))-1): #while i is less than the amount of classes, write the following data to Results.csv
+            print(Classes[i], ":")
+            fileList = glob.glob(INPUT_DIR + Classes[i] + '/*')
+            fileList.sort()
             
-            listOfMotifs = breakIntoMotifs(DNA, LMER)
             
-            for nextMotif in listOfMotifs:
+            # how many files are we using?
+            nFiles = len(fileList)
+            
+            fileN = 0   # index into LIST for each motif
+            for nextFile in fileList:
+                DNA = getDNA(nextFile)
                 
-                if (nextMotif in dict):
-                    dict[nextMotif][fileN] = dict[nextMotif][fileN] + 1
-                else:
-                    dict[nextMotif] = [0]*nFiles
-                    dict[nextMotif][fileN] = 1
-                if (fileN > 1):
-                    print("The conserved motif", nextMotif, "shows up in", fileN+1, "upstream sequences")
+                listOfMotifs = breakIntoMotifs(DNA, LMER)
+                
+                for nextMotif in listOfMotifs:
                     
-            fileN += 1  # prepare for next file
-            
-        printALL_MotifCounts(OUTPUT, fileList, dict)
-        i+=1
-        
+                    if (nextMotif in dict):
+                        dict[nextMotif][fileN] = dict[nextMotif][fileN] + 1
+                    else:
+                        dict[nextMotif] = [0]*nFiles
+                        dict[nextMotif][fileN] = 1
+                    if (fileN > 1): #if index is greater than 1(really two since count starts at 0), then we know that that motif shows up in at leeast three genomes in that class
+                        print("The conserved motif", nextMotif, "shows up in", fileN+1, "upstream sequences")
+                print("\n")        
+                fileN += 1  # prepare for next file
+                
+            printALL_MotifCounts(OUTPUT, fileList, dict)
+            i+=1
+        LMER+=1
     
         
         
