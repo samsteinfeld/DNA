@@ -13,7 +13,7 @@ COMMA = ','
 def main():
     
     LMER_MIN = 8
-    LMER_MAX = 12
+    LMER_MAX = 8
     
     Classes = ["Mammals", "Birds", "Fish"] #array containing folder name of each class
     LMER = LMER_MIN
@@ -35,7 +35,8 @@ def main():
         fileList = []
         
         while(i<= int(len(Classes))-1): #while i is less than the amount of classes, write the following data to Results.csv
-            print(Classes[i], ":")
+            #print(Classes[i], ":")
+            dict = {} 
             fileList = glob.glob(INPUT_DIR + Classes[i] + '/*')
             fileList.sort()
             
@@ -56,17 +57,60 @@ def main():
                     else:
                         dict[nextMotif] = [0]*nFiles
                         dict[nextMotif][fileN] = 1
-                    if (fileN > 1): #if index is greater than 1(really two since count starts at 0), then we know that that motif shows up in at leeast three genomes in that class
-                        print("The conserved motif", nextMotif, "shows up in", fileN+1, "upstream sequences")
-                print("\n")        
+                #print("\n")        
                 fileN += 1  # prepare for next file
                 
             printALL_MotifCounts(OUTPUT, fileList, dict)
             i+=1
         LMER+=1
+        
+    seq = getDNA("Results_MotifSize8.csv")
+    text = []
+    for next in seq:
+        seq+=next.replace("\n",",") 
+        if(next=="\n"):
+            next=","
+    text = seq.split(",")
+    length = (len(text))
     
-        
-        
+    i=0
+    Results = open("Results.txt", "w")
+    ok=False
+    ok2=False
+    ok3=False
+    print (text)
+    while(i < int(length)):
+        count=0
+        if(int(len(text[i]))==10):
+            text[i]+=text[i].replace("\n",",")
+            print(text[i])
+        if(text[i].count("Mammals")>0 and not ok):
+            Results.write("\nMammals:\n")
+            ok=True
+        elif(text[i].count("Birds")>0 and not ok2):
+            Results.write("\nBirds:\n")  
+            ok2=True
+        elif(text[i].count("Fish")>0 and not ok3):
+            Results.write("\nFish:\n")  
+            ok3=True
+        if (int(len(text[i]))==8):
+            print(int(text[i+1]))
+            if(int(text[i+1])>0):
+                count+=1
+            if(float(text[i+2])>0):
+                count+=1
+            if(int(text[i+3])>0):
+                count+=1
+            if(int(text[i+4])>0):
+                count+=1
+            if(int(text[i+5])>0):
+                count+=1
+            if(count>1):
+                Results.write("%c%s%s%s%d%s" % ("\n", "Motif: ", text[i], " shows up ", count, " times"))
+            
+        i+=1    
+                
+    Results.close()    
     OUTPUT.close()           
     print("\n\nDone.\n")
     
@@ -167,7 +211,7 @@ def printALL_MotifCounts(OUTPUT, fileList, dictOfMotifs):
         OUTPUT.write("%s" % (key))
         for i, fileName in enumerate(fileList):
             OUTPUT.write("%c%d" % (COMMA, dictOfMotifs[key][i]) )
-        OUTPUT.write("\n")
+        OUTPUT.write(",")
     
     # close outfile file
     OUTPUT.write("\n")
@@ -175,7 +219,6 @@ def printALL_MotifCounts(OUTPUT, fileList, dictOfMotifs):
 
 # end printMotifCounts()
 	
-
 
 def getDNA( filename ):
     """ Open a FASTA file of DNA read it, and return the DNA as one string.
@@ -197,21 +240,24 @@ def getDNA( filename ):
         next(INPUT)  # skip header line
         for nextLine in INPUT:
             # remove the newline
-            nextLine.strip()  
+            DNA+=nextLine.replace("\n",",") 
+            DNA+=nextLine.replace("'\'",",")  
+            DNA+=nextLine.replace("n","")  
             # remove whitespace
-            nextLine = ''.join(nextLine.split()) 
+            #nextLine = ''.join(nextLine.split()) 
             # remove all the digits
-            nextLine = ''.join([i for i in nextLine if not i.isdigit()])
+            #nextLine = ''.join([i for i in nextLine if not i.isdigit()])
             DNA = DNA + nextLine
-        # end for each line
-                
+            DNA+=nextLine.replace("\n",",") 
+        # end for each line  
+            
         #print (DNA)
         #print ("========================")
         return DNA
     # end else
     
 # end getDNA()
-# ------------------------------------------------------------------------
+# --
 
 def randomGenome():
     s = "ATTCGGTT"
